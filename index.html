@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расчет вероятности сердечно-сосудистой госпитализации в течение 12 месяцев у пациента кардиоренометаболического фенотипа ХСНсФВ</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Расчет вероятности сердечно-сосудистой госпитализации в течение 12 месяцев у пациента кардиоренометаболического фенотипа ХСНсФВ</h1>
+        <div class="input-group">
+            <label for="alphaGalactosidase">Уровень альфа-галактозидазы А <span class="mobile-br"><br></span>(мкмоль/л/ч):</label>
+            <input type="text" id="alphaGalactosidase" placeholder="Введите значение">
+            <div class="error" id="alphaGalactosidaseError"></div>
+        </div>
+        <div class="input-group">
+            <label for="h2fpef">H2FPEF (баллы):</label>
+            <input type="text" id="h2fpef" placeholder="Введите значение от 0 до 9">
+            <div class="error" id="h2fpefError"></div>
+        </div>
+        <div class="input-group">
+            <label for="hospitalization">Факт сердечно-сосудистой госпитализации в последние 12 месяцев:</label>
+            <select id="hospitalization">
+                <option value="">Выберите ответ</option>
+                <option value="1">Да</option>
+                <option value="0">Нет</option>
+            </select>
+            <div class="error" id="hospitalizationError"></div>
+        </div>
+        <div class="input-group">
+            <label for="smoking">Статус курения:</label>
+            <select id="smoking">
+                <option value="">Выберите ответ</option>
+                <option value="1">Курит</option>
+                <option value="0">Нет</option>
+            </select>
+            <div class="error" id="smokingError"></div>
+        </div>
+        <div class="input-group">
+            <label for="eEprime">Отношение Е/е':</label>
+            <input type="text" id="eEprime" placeholder="Введите значение">
+            <div class="error" id="eEprimeError"></div>
+        </div>
+        <button onclick="calculateProbability()">Рассчитать вероятность</button>
+        <button id="clearButton" onclick="clearForm()" style="background: linear-gradient(135deg, #6c757d, #5a6268); display: none;">Очистить форму</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
