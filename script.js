@@ -1,72 +1,123 @@
+// Кэширование DOM элементов
+const elements = {};
+
+// Инициализация элементов при загрузке страницы
+function initElements() {
+    elements.alphaGalactosidase = document.getElementById('alphaGalactosidase');
+    elements.h2fpef = document.getElementById('h2fpef');
+    elements.hospitalization = document.getElementById('hospitalization');
+    elements.smoking = document.getElementById('smoking');
+    elements.eEprime = document.getElementById('eEprime');
+    elements.clearButton = document.getElementById('clearButton');
+    elements.result = document.getElementById('result');
+    
+    // Кэширование элементов ошибок
+    elements.errors = {
+        alphaGalactosidase: document.getElementById('alphaGalactosidaseError'),
+        h2fpef: document.getElementById('h2fpefError'),
+        hospitalization: document.getElementById('hospitalizationError'),
+        smoking: document.getElementById('smokingError'),
+        eEprime: document.getElementById('eEprimeError')
+    };
+}
+
+// Вспомогательная функция для нормализации числовых значений
+function normalizeNumber(value) {
+    return value.replace(',', '.');
+}
+
+// Вспомогательная функция для парсинга числового значения
+function parseNumber(value) {
+    return parseFloat(normalizeNumber(value));
+}
+
+// Проверка, все ли поля пусты
 function checkIfAllEmpty() {
-    const alphaGalactosidase = document.getElementById('alphaGalactosidase').value.trim();
-    const h2fpef = document.getElementById('h2fpef').value.trim();
-    const hospitalization = document.getElementById('hospitalization').value;
-    const smoking = document.getElementById('smoking').value;
-    const eEprime = document.getElementById('eEprime').value.trim();
-    const clearButton = document.getElementById('clearButton');
+    const isEmpty = 
+        elements.alphaGalactosidase.value.trim() === '' &&
+        elements.h2fpef.value.trim() === '' &&
+        elements.hospitalization.value === '' &&
+        elements.smoking.value === '' &&
+        elements.eEprime.value.trim() === '';
     
-    if (alphaGalactosidase === '' && h2fpef === '' && hospitalization === '' && smoking === '' && eEprime === '') {
-        clearButton.style.display = 'none';
-    } else {
-        clearButton.style.display = 'block';
-    }
+    elements.clearButton.style.display = isEmpty ? 'none' : 'block';
 }
 
+// Очистка ошибки поля
 function clearFieldError(fieldId) {
-    const errorElement = document.getElementById(fieldId + 'Error');
-    if (errorElement) {
-        errorElement.textContent = '';
+    if (elements.errors[fieldId]) {
+        elements.errors[fieldId].textContent = '';
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const numericInputs = ['alphaGalactosidase', 'h2fpef', 'eEprime'];
-    numericInputs.forEach(function(id) {
-        const input = document.getElementById(id);
-        input.addEventListener('input', function() {
-            this.value = this.value.replace(/[^0-9.,]/g, '').replace(/,/g, '.');
-            const parts = this.value.split('.');
-            if (parts.length > 2) {
-                this.value = parts[0] + '.' + parts.slice(1).join('');
-            }
-            clearFieldError(id);
-            checkIfAllEmpty();
-        });
-    });
-    
-    const selectInputs = ['hospitalization', 'smokаваing'];
-    selectInputs.forEach(function(id) {
-        const select = document.getElementById(id);
-        select.addEventListener('change', function() {
-            clearFieldError(id);
-            checkIfAllEmpty();
-        });
-    });
-    
-    checkIfAllEmpty();
-});
+// Валидация и форматирование числового ввода
+function formatNumericInput(input) {
+    input.value = input.value.replace(/[^0-9.,]/g, '').replace(/,/g, '.');
+    const parts = input.value.split('.');
+    if (parts.length > 2) {
+        input.value = parts[0] + '.' + parts.slice(1).join('');
+    }
+}
 
+// Debounce функция для оптимизации производительности
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Инициализация обработчиков событий
+function initEventListeners() {
+    const numericInputs = ['alphaGalactosidase', 'h2fpef', 'eEprime'];
+    const debouncedCheck = debounce(checkIfAllEmpty, 100);
+    
+    numericInputs.forEach(id => {
+        const input = elements[id];
+        input.addEventListener('input', function() {
+            formatNumericInput(this);
+            clearFieldError(id);
+            debouncedCheck();
+        });
+    });
+    
+    const selectInputs = ['hospitalization', 'smoking'];
+    selectInputs.forEach(id => {
+        elements[id].addEventListener('change', function() {
+            clearFieldError(id);
+            checkIfAllEmpty();
+        });
+    });
+}
+
+// Логистическая функция вероятности
 function logisticProbability(z) {
     return 1 / (1 + Math.exp(-z));
 }
 
+// Расчет Z-значения
 function calculateZ(alphaGalactosidase, h2fpef, hospitalization, smoking, eEprime) {
-    return -6.032 - 0.020 * alphaGalactosidase + 0.385 * h2fpef + 1.817 * hospitalization + 2.489 * smoking + 0.178 * eEprime;
+    return -6.032 - 0.020 * alphaGalactosidase + 0.385 * h2fpef + 
+           1.817 * hospitalization + 2.489 * smoking + 0.178 * eEprime;
 }
 
+// Валидация числового ввода
 function validateInput(value, min, max, fieldName) {
     if (isNaN(value) || value === '') {
         return `Пожалуйста, введите числовое значение для ${fieldName}.`;
     }
-
     if (value < min || value > max) {
         return `Пожалуйста, введите значение от ${min} до ${max} для ${fieldName}.`;
     }
-
     return null;
 }
 
+// Валидация выбора
 function validateSelect(value, fieldName) {
     if (value === '') {
         return `Пожалуйста, выберите значение для ${fieldName}.`;
@@ -74,61 +125,102 @@ function validateSelect(value, fieldName) {
     return null;
 }
 
+// Расчет вероятности
 function calculateProbability() {
-    const alphaGalactosidaseStr = document.getElementById('alphaGalactosidase').value.trim();
-    const h2fpefStr = document.getElementById('h2fpef').value.trim();
-    const hospitalizationStr = document.getElementById('hospitalization').value;
-    const smokingStr = document.getElementById('smoking').value;
-    const eEprimeStr = document.getElementById('eEprime').value.trim();
+    // Получение значений
+    const values = {
+        alphaGalactosidase: elements.alphaGalactosidase.value.trim(),
+        h2fpef: elements.h2fpef.value.trim(),
+        hospitalization: elements.hospitalization.value,
+        smoking: elements.smoking.value,
+        eEprime: elements.eEprime.value.trim()
+    };
 
-    const alphaGalactosidaseError = validateInput(alphaGalactosidaseStr === '' ? '' : parseFloat(alphaGalactosidaseStr.replace(',', '.')), 0, 1000, "альфа-галактозидазы А");
-    const h2fpefError = validateInput(h2fpefStr === '' ? '' : parseFloat(h2fpefStr.replace(',', '.')), 0, 9, "H2FPEF");
-    const hospitalizationError = validateSelect(hospitalizationStr, "факта госпитализации");
-    const smokingError = validateSelect(smokingStr, "статуса курения");
-    const eEprimeError = validateInput(eEprimeStr === '' ? '' : parseFloat(eEprimeStr.replace(',', '.')), 0, 100, "отношения Е/е'");
+    // Валидация
+    const errors = {
+        alphaGalactosidase: validateInput(
+            values.alphaGalactosidase ? parseNumber(values.alphaGalactosidase) : '', 
+            0, 1000, "альфа-галактозидазы А"
+        ),
+        h2fpef: validateInput(
+            values.h2fpef ? parseNumber(values.h2fpef) : '', 
+            0, 9, "H2FPEF"
+        ),
+        hospitalization: validateSelect(values.hospitalization, "факта госпитализации"),
+        smoking: validateSelect(values.smoking, "статуса курения"),
+        eEprime: validateInput(
+            values.eEprime ? parseNumber(values.eEprime) : '', 
+            0, 100, "отношения Е/е'"
+        )
+    };
 
-    document.getElementById('alphaGalactosidaseError').textContent = alphaGalactosidaseError || '';
-    document.getElementById('h2fpefError').textContent = h2fpefError || '';
-    document.getElementById('hospitalizationError').textContent = hospitalizationError || '';
-    document.getElementById('smokingError').textContent = smokingError || '';
-    document.getElementById('eEprimeError').textContent = eEprimeError || '';
+    // Отображение ошибок
+    Object.keys(errors).forEach(key => {
+        elements.errors[key].textContent = errors[key] || '';
+    });
 
-    if (alphaGalactosidaseError || h2fpefError || hospitalizationError || smokingError || eEprimeError) {
+    // Проверка наличия ошибок
+    if (Object.values(errors).some(error => error !== null)) {
         return;
     }
 
-    const alphaGalactosidase = parseFloat(alphaGalactosidaseStr.replace(',', '.'));
-    const h2fpef = parseFloat(h2fpefStr.replace(',', '.'));
-    const hospitalization = parseInt(hospitalizationStr);
-    const smoking = parseInt(smokingStr);
-    const eEprime = parseFloat(eEprimeStr.replace(',', '.'));
+    // Парсинг значений
+    const parsedValues = {
+        alphaGalactosidase: parseNumber(values.alphaGalactosidase),
+        h2fpef: parseNumber(values.h2fpef),
+        hospitalization: parseInt(values.hospitalization),
+        smoking: parseInt(values.smoking),
+        eEprime: parseNumber(values.eEprime)
+    };
 
-    const z = calculateZ(alphaGalactosidase, h2fpef, hospitalization, smoking, eEprime);
+    // Расчет
+    const z = calculateZ(
+        parsedValues.alphaGalactosidase,
+        parsedValues.h2fpef,
+        parsedValues.hospitalization,
+        parsedValues.smoking,
+        parsedValues.eEprime
+    );
 
     const probability = logisticProbability(z);
 
-    const resultElement = document.getElementById('result');
-    resultElement.textContent = `Вероятность сердечно-сосудистой госпитализации в ближайшие 12 месяцев: ${(probability * 100).toFixed(2)}%`;
-    resultElement.classList.add('show');
+    // Отображение результата
+    elements.result.textContent = 
+        `Вероятность сердечно-сосудистой госпитализации в ближайшие 12 месяцев: ${(probability * 100).toFixed(2)}%`;
+    elements.result.classList.add('show');
 }
 
+// Очистка формы
 function clearForm() {
-    document.getElementById('alphaGalactosidase').value = '';
-    document.getElementById('h2fpef').value = '';
-    document.getElementById('hospitalization').value = '';
-    document.getElementById('smoking').value = '';
-    document.getElementById('eEprime').value = '';
+    // Очистка полей ввода
+    elements.alphaGalactosidase.value = '';
+    elements.h2fpef.value = '';
+    elements.hospitalization.value = '';
+    elements.smoking.value = '';
+    elements.eEprime.value = '';
 
-    document.getElementById('alphaGalactosidaseError').textContent = '';
-    document.getElementById('h2fpefError').textContent = '';
-    document.getElementById('hospitalizationError').textContent = '';
-    document.getElementById('smokingError').textContent = '';
-    document.getElementById('eEprimeError').textContent = '';
+    // Очистка ошибок
+    Object.values(elements.errors).forEach(errorEl => {
+        errorEl.textContent = '';
+    });
 
-    const resultElement = document.getElementById('result');
-    resultElement.textContent = '';
-    resultElement.classList.remove('show');
+    // Очистка результата
+    elements.result.textContent = '';
+    elements.result.classList.remove('show');
     
     checkIfAllEmpty();
 }
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    initElements();
+    initEventListeners();
+    checkIfAllEmpty();
+    
+    // Привязка обработчиков кнопок
+    document.getElementById('calculateButton').addEventListener('click', calculateProbability);
+    if (elements.clearButton) {
+        elements.clearButton.addEventListener('click', clearForm);
+    }
+});
 
