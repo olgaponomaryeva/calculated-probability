@@ -227,3 +227,12 @@ button:active {
     }
 }
 
+.copyright {
+    text-align: center;
+    padding: 15px 0 0 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+

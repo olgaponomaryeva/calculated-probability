@@ -211,11 +211,22 @@ function clearForm() {
     checkIfAllEmpty();
 }
 
+// Установка года в футер
+function setCopyrightYear() {
+    const copyrightFooter = document.getElementById('copyrightFooter');
+    if (copyrightFooter) {
+        const currentYear = new Date().getFullYear();
+        const startYear = 2025;
+        copyrightFooter.textContent = `© ${startYear} - ${currentYear}`;
+    }
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     initElements();
     initEventListeners();
     checkIfAllEmpty();
+    setCopyrightYear();
     
     // Привязка обработчиков кнопок
     document.getElementById('calculateButton').addEventListener('click', calculateProbability);
